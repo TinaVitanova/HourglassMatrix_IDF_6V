@@ -14,5 +14,6 @@
     "--background-index",
     "--query-driver=**",
     "--compile-commands-dir=c:\\Users\\Martina Damjanovska\\HourglassMatrix_6V\\build"
-  ]
+  ],
+  "idf.flashType": "UART"
 }

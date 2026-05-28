@@ -10,6 +10,7 @@
 #include "mpu_6050.h"
 #include "dot_matrix.h"
 #include "driver/i2c.h"
+#include "driver/gpio.h"
 #include "esp_sleep.h"
 #include "esp_timer.h"
 
@@ -39,7 +40,7 @@ void configure_gpio_for_wakeup(void) {
 
 void enter_deep_sleep_wait_motion(void) {
     configure_gpio_for_wakeup();
-    esp_deep_sleep_enable_gpio_wakeup(1ULL << MPU_INT_GPIO, ESP_GPIO_WAKEUP_GPIO_HIGH);
+    esp_sleep_enable_gpio_wakeup_on_hp_periph_powerdown(1ULL << MPU_INT_GPIO, ESP_GPIO_WAKEUP_GPIO_HIGH);
     esp_deep_sleep_start();
 }
 
@@ -196,6 +197,8 @@ static void update_matrices(MatrixSand *m1, MatrixSand *m2) {
     // Add or remove this for each matrix that needs to be turned
     // rotate90_clockwise helper also exists if necessary
     rotate90_counterclockwise(rows_matrix_1);
+    rotate90_counterclockwise(rows_matrix_1);
+    rorate90_clockwise(rows_matrix_2);
     for (int r = 0; r < 8; r++) {
         max7219_write_to_displays(MAX_DIGIT0 + r, rows_matrix_1[r], rows_matrix_2[r]);
     }
@@ -267,7 +270,7 @@ void app_main(void) {
     last_motion_us = now_us();
 
 
-    while (1) {
+    while (true) {
         // Read raw accel (use raw counts; ratios only)
         int16_t axi, ayi, azi;
         if (mpu_read_accel_raw(&axi, &ayi, &azi) != ESP_OK) {
