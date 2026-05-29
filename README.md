@@ -1,7 +1,7 @@
 # ESP32 Matrix Sand Clock 🕰️
 
 [![ESP32](https://img.shields.io/badge/ESP32-Sand%20Clock-blue?style=flat-square&logo=espressif)](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/)
-[![ESP-IDF](https://img.shields.io/badge/ESP--IDF-v5.x-green?style=flat-square&logo=esp-idf)](https://docs.espressif.com/projects/esp-idf/en/latest/)
+[![ESP-IDF](https://img.shields.io/badge/ESP--IDF-v6.x-green?style=flat-square&logo=esp-idf)](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/)
 
 **ESP32 firmware simulating a realistic sand clock/hourglass** using **two 8x8 LED dot matrices**. MPU6050 accelerometer detects tilt, moving "sand" grains between matrices with physics simulation, corner handoff, and ultra-low-power deep sleep.
 
