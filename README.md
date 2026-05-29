@@ -1,53 +1,51 @@
-| Supported Targets | ESP32 | ESP32-C2 | ESP32-C3 | ESP32-C5 | ESP32-C6 | ESP32-C61 | ESP32-H2 | ESP32-H21 | ESP32-H4 | ESP32-P4 | ESP32-S2 | ESP32-S3 | Linux |
-| ----------------- | ----- | -------- | -------- | -------- | -------- | --------- | -------- | --------- | -------- | -------- | -------- | -------- | ----- |
+# ESP32 Matrix Sand Clock 🕰️
 
-# Hello World Example
+[![ESP32](https://img.shields.io/badge/ESP32-Sand%20Clock-blue?style=flat-square&logo=espressif)](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/)
+[![ESP-IDF](https://img.shields.io/badge/ESP--IDF-v5.x-green?style=flat-square&logo=esp-idf)](https://docs.espressif.com/projects/esp-idf/en/latest/)
 
-Starts a FreeRTOS task to print "Hello World".
+**ESP32 firmware simulating a realistic sand clock/hourglass** using **two 8x8 LED dot matrices**. MPU6050 accelerometer detects tilt, moving "sand" grains between matrices with physics simulation, corner handoff, and ultra-low-power deep sleep.
 
-(See the README.md file in the upper level 'examples' directory for more information about examples.)
+> Tilt to pour sand between matrices! Perfect for electronics teaching demos 🎓
 
-## How to use example
+## ✨ Features
 
-Follow detailed instructions provided specifically for this example.
+- **Dual 8x8 MAX7219** dot matrices (corner-to-corner layout)
+- **MPU6050 motion detection** with interrupt-driven deep sleep (~5s inactivity)
+- **RTC memory persistence** - state survives power cycles
+- **Realistic physics**: diagonal tilt compensation, collision resolution
+- **Corner grain handoff** between touching matrices
+- **Ultra-low power**: GPIO wakeup, MAX7219 shutdown
 
-Select the instructions depending on Espressif chip installed on your development board:
+## 🛠️ Hardware Connections
 
-- [ESP32 Getting Started Guide](https://docs.espressif.com/projects/esp-idf/en/stable/get-started/index.html)
-- [ESP32-S2 Getting Started Guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s2/get-started/index.html)
+| Component | Pin | ESP32 GPIO |
+|-----------|-----|------------|
+| **MPU6050** | VCC | 3.3V |
+| | GND | GND |
+| | SDA | **GPIO10** |
+| | SCL | **GPIO8** |
+| | INT | **GPIO0** (wakeup) |
+| **MAX7219 #1** (Upper) | DIN | **GPIO6** |
+| | CS | **GPIO3** |
+| | CLK | **GPIO4** |
+| **MAX7219 #2** (Lower) | DIN | DOUT of #1 |
+| | CS | CS OUT of #1 |
+| | CLK | CLK OUT of #1 |
 
 
-## Example folder contents
+## 🔬 Physics Engine
 
-The project **hello_world** contains one source file in C language [hello_world_main.c](main/hello_world_main.c). The file is located in folder [main](main).
+1. **Read raw accel** `(axi, ayi, azi)`
+2. **Rotate to diagonal frame**: `xx=-az-ax, yy=-az+ax, zz=ay`
+3. **Compute move direction** from tilt ratios `tan(22.5°/67.5°)`
+4. **Collision resolution**: side-count priority `(left≥right → X-axis)`
+5. **Corner handoff**: grain transfers at touching corner
+6. **Update matrices** → MAX7219
 
-ESP-IDF projects are built using CMake. The project build configuration is contained in `CMakeLists.txt` files that provide set of directives and instructions describing the project's source files and targets (executable, library, or both).
+## ⚡ Power Management
 
-Below is short explanation of remaining files in the project folder.
-
-```
-├── CMakeLists.txt
-├── pytest_hello_world.py      Python script used for automated testing
-├── main
-│   ├── CMakeLists.txt
-│   └── hello_world_main.c
-└── README.md                  This is the file you are currently reading
-```
-
-For more information on structure and contents of ESP-IDF projects, please refer to Section [Build System](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/build-system.html) of the ESP-IDF Programming Guide.
-
-## Troubleshooting
-
-* Program upload failure
-
-    * Hardware connection is not correct: run `idf.py -p PORT monitor`, and reboot your board to see if there are any output logs.
-    * The baud rate for downloading is too high: lower your baud rate in the `menuconfig` menu, and try again.
-
-## Technical support and feedback
-
-Please use the following feedback channels:
-
-* For technical queries, go to the [esp32.com](https://esp32.com/) forum
-* For a feature request or bug report, create a [GitHub issue](https://github.com/espressif/esp-idf/issues)
-
-We will get back to you as soon as possible.
+| State | Trigger | Action |
+|-------|---------|--------|
+| **Active** | Motion detected | Physics + display update |
+| **Sleep** | 5s inactivity | Save RTC, MAX7219 off, deep sleep |
+| **Wake** | MPU INT (GPIO0 HIGH) | Restore RTC, resume physics |
